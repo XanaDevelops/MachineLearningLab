@@ -60,6 +60,14 @@ double SimilarityFunctions::euclideanDistance(const std::vector<double>& a, cons
 		throw std::invalid_argument("Vectors must be of equal length.");
 	}
 	double dist = 0.0;
+
+	for (int i = 0; i < a.size(); i++)
+	{
+		dist += pow(a[i] - b[i], 2);
+	}
+
+	dist = sqrt(dist);
+
 	
 	// Compute the Euclidean Distance
 	// TODO
