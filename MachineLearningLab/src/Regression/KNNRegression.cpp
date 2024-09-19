@@ -60,11 +60,11 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
 		--- Calculate average of y_train values for k-nearest neighbors
 	*/
 	
-	//TODO
+	
     for (int i = 0; i < X_test.size(); i++)
     {
         flag = 0;
-        for (int j=0; j < k; j++)
+        for (int j=0; j < k; j++) // compute distance of the first k elements
         {
             knn[j] = j;
             knn_dist[j] = SimilarityFunctions::euclideanDistance(X_test[i],X_train_[j]);
@@ -92,7 +92,7 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
             dist_max = 0;
             for (int w = 0; w < k; w++)
             {
-                if (knn_dist[w] >= dist_max)
+                if (knn_dist[w] >= dist_max)  // find the furthest between the k nearest neighbors
                 {
                     max = w;
                     dist_max = knn_dist[w];
@@ -100,7 +100,7 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
 
             }
 
-            if (dist_parz < knn_dist[max])
+            if (dist_parz < knn_dist[max]) // if the train element is nearer than the furthest neighbor, update the neighbors
             {
                 knn_dist[max] = dist_parz;
                 knn[max] = j;
@@ -109,19 +109,19 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
 
         }
 
-        if (flag == 1)
+        if (flag == 1) // if we have already a point, we assign the right value of y
         {
             y_pred[i] = y_train_[flagindex];
         }
         else 
         { 
             y_sum = 0;
-            for (int w = 0; w < k; w++)
+            for (int w = 0; w < k; w++)  
             {
                 y_sum += y_train_[knn[w]];
             }
 
-            y_pred[i] = y_sum / k;
+            y_pred[i] = y_sum / k; // compute the average value of y (between the k nearest neighbors) and use as prediction
         }
     }
 
