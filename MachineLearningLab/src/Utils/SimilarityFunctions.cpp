@@ -77,7 +77,10 @@ double SimilarityFunctions::manhattanDistance(const std::vector<double>& a, cons
 	double dist = 0.0;
 	
 	// Compute the Manhattan Distance
-	// TODO
+	for (int i = 0; i < a.size(); i++)
+	{
+		dist += abs(a[i] - b[i]);
+	}
 
 	return dist;
 }
