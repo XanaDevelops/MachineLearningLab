@@ -14,7 +14,13 @@ double SimilarityFunctions::hammingDistance(const std::vector<double>& v1, const
 	double dist = 0.0;
 	
 	// Compute the Hamming Distance
-	//TODO
+	for (int i = 0; i < v1.size(); i++)
+	{
+		if (v1[i] != v2[i]) //diferent values
+		{
+			dist++;
+		}
+	}
 
 	return dist;
 }
@@ -93,8 +99,12 @@ double SimilarityFunctions::minkowskiDistance(const std::vector<double>& a, cons
 	double dist = 0.0;
 	
 	// Compute the Minkowski Distance
-	// TODO
+	for (int i = 0; i < a.size(); i++)
+	{
+		dist += pow(abs(a[i] - b[i]), p);
+	}
 	
+	dist = pow(dist, 1.0 / p);
 
 	return dist;
 }
