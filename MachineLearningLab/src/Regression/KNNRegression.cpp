@@ -36,6 +36,16 @@ void KNNRegression::fit(const std::vector<std::vector<double>>& X_train, const s
 std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>>& X_test) const {
 	std::vector<double> y_pred; // Store predicted values for all test data points
 	y_pred.reserve(X_test.size()); // Reserve memory for y_pred to avoid frequent reallocation
+    
+    
+    int k = 3, max, flag, flagindex;
+    double dist_parz, dist_max, y_sum;
+    std::vector<int> knn;
+    std::vector<double> knn_dist;
+
+    knn.reserve(k);
+    knn_dist.reserve(k);
+
 
 	// Check if training data is empty
 	if (X_train_.empty() || y_train_.empty()) {
@@ -51,7 +61,69 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
 	*/
 	
 	//TODO
+    for (int i = 0; i < X_test.size(); i++)
+    {
+        flag = 0;
+        for (int j=0; j < k; j++)
+        {
+            knn[j] = j;
+            knn_dist[j] = SimilarityFunctions::euclideanDistance(X_test[i],X_train_[j]);
+            if (knn_dist[j]==0)
+            {
+                flag = 1;
+                flagindex = j;
+                break;
+            }
+        }
 
+
+        for (int j = k; j < X_train_.size()&&flag==0; j++)
+        {   
+
+            dist_parz = SimilarityFunctions::euclideanDistance(X_test[i],X_train_[j]);
+
+            if (dist_parz==0)
+            {
+                flag = 1;
+                flagindex = j;
+                break;
+            }
+            
+            dist_max = 0;
+            for (int w = 0; w < k; w++)
+            {
+                if (knn_dist[w] >= dist_max)
+                {
+                    max = w;
+                    dist_max = knn_dist[w];
+                }
+
+            }
+
+            if (dist_parz < knn_dist[max])
+            {
+                knn_dist[max] = dist_parz;
+                knn[max] = j;
+                break;
+            }
+
+        }
+
+        if (flag == 1)
+        {
+            y_pred[i] = y_train_[flagindex];
+        }
+        else 
+        { 
+            y_sum = 0;
+            for (int w = 0; w < k; w++)
+            {
+                y_sum += y_train_[knn[w]];
+            }
+
+            y_pred[i] = y_sum / k;
+        }
+    }
 
 	return y_pred; // Return vector of predicted values for all test data points
 }
