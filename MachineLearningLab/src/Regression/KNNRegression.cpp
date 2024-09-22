@@ -38,13 +38,13 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
 	y_pred.reserve(X_test.size()); // Reserve memory for y_pred to avoid frequent reallocation
     
    
-    int k = 3, max;
+    int max;
     double dist_parz, dist_max, y_sum;
     std::vector<int> knn;
     std::vector<double> knn_dist;
 
-    knn.reserve(k);
-    knn_dist.reserve(k);
+    knn.reserve(k_);
+    knn_dist.reserve(k_);
 
 
 	// Check if training data is empty
@@ -60,7 +60,7 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
 		--- Calculate average of y_train values for k-nearest neighbors
 	*/
 	
-    for (int i = 0; i < k; i++)
+    for (int i = 0; i < k_; i++)
     {
         knn.push_back(0);
         knn_dist.push_back(0);
@@ -69,7 +69,7 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
     for (int i = 0; i < X_test.size(); i++)
     {
         
-        for (int j=0; j < k; j++) // compute distance of the first k elements
+        for (int j=0; j < k_; j++) // compute distance of the first k elements
         {
             knn[j] = j;
             knn_dist[j] = SimilarityFunctions::euclideanDistance(X_test[i],X_train_[j]);
@@ -77,13 +77,13 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
         }
 
         
-        for (int j = k; j < X_train_.size(); j++)
+        for (int j = k_; j < X_train_.size(); j++)
         {   
 
             dist_parz = SimilarityFunctions::euclideanDistance(X_test[i],X_train_[j]);
 
             dist_max = 0;
-            for (int w = 0; w < k; w++)
+            for (int w = 0; w < k_; w++)
             {
                 if (knn_dist[w] >= dist_max)  // find the furthest between the k nearest neighbors
                 {
@@ -105,12 +105,12 @@ std::vector<double> KNNRegression::predict(const std::vector<std::vector<double>
         
         
             y_sum = 0;
-            for (int w = 0; w < k; w++)  
+            for (int w = 0; w < k_; w++)  
             {
                 y_sum += y_train_[knn[w]];
             }
 
-            y_pred.push_back(y_sum / k); // compute the average value of y (between the k nearest neighbors) and use as prediction
+            y_pred.push_back(y_sum / k_); // compute the average value of y (between the k nearest neighbors) and use as prediction
        
         
     }
