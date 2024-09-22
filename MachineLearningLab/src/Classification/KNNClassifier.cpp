@@ -47,8 +47,46 @@ std::vector<double> KNNClassifier::predict(const std::vector<std::vector<double>
 		--- Loop through the labels and their counts to find the most frequent label
 		--- Check if predicted label is valid
 	*/
-	
-	//TODO
+    
+    std::vector<std::pair<double, double>> distances;
+    
+    for (int i = 0; i < X_test.size(); i++) {
+        std::vector<double> testPoint = X_test[i];
+
+        //calculate distances
+        for (int j = 0; j < X_train_.size(); j++) {
+            std::vector<double> trainPoint = X_train_[j];
+            double dist = SimilarityFunctions::euclideanDistance(testPoint, trainPoint);
+            distances.push_back(std::make_pair(y_train_[i], dist));
+        }
+        
+        //sort distances
+        std::sort(distances.begin(), distances.end(), [](std::pair<double, double>a, std::pair<double, double>b) {
+            return a.second < b.second;
+            });
+
+        //get k
+        std::map<double, int> labelCounts;
+        for (int j = 0; j < k_; j++) {
+            labelCounts[distances[j].first]++;
+        }
+		double currentLabel = -1;
+        int maxValue = -1;
+		for (std::pair<double, int> pair : labelCounts) {
+			if (pair.second > maxValue) {
+				currentLabel = pair.first;
+				maxValue = pair.second;
+			}
+		}
+		std::cout << "Predicted label: " << currentLabel << std::endl;
+
+        y_pred.push_back(currentLabel);
+    }
+    
+    
+    /*for (int i = 0; i < X_test.size(); i++) {
+        y_pred.push_back(1.);
+    }*/
 	
 	return y_pred; // Return vector of predicted labels for all test data points
 }
