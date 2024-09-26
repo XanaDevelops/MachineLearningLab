@@ -48,16 +48,18 @@ std::vector<double> KNNClassifier::predict(const std::vector<std::vector<double>
 		--- Check if predicted label is valid
 	*/
     
-    std::vector<std::pair<double, double>> distances;
+    
     
     for (int i = 0; i < X_test.size(); i++) {
+        std::vector<std::pair<double, double>> distances;
+
         std::vector<double> testPoint = X_test[i];
 
         //calculate distances
         for (int j = 0; j < X_train_.size(); j++) {
             std::vector<double> trainPoint = X_train_[j];
             double dist = SimilarityFunctions::euclideanDistance(testPoint, trainPoint);
-            distances.push_back(std::make_pair(y_train_[i], dist));
+            distances.push_back(std::make_pair(y_train_[j], dist));
         }
         
         //sort distances
