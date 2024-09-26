@@ -29,7 +29,7 @@ DecisionTreeClassification::DecisionTreeClassification(int min_samples_split, in
 // Fit is a function to fits a decision tree to the given data.//
 void DecisionTreeClassification::fit(std::vector<std::vector<double>>& X, std::vector<double>& y) {
 	n_feats = (n_feats == 0) ? X[0].size() : min(n_feats, static_cast<int>(X[0].size()));
-	root = growTree(X, y);
+	root = growTree(X, y); //should't here be (X, y, 0)  ???
 }
 
 
@@ -39,6 +39,10 @@ std::vector<double> DecisionTreeClassification::predict(std::vector<std::vector<
 	
 	// Implement the function
 	// TODO
+	for (int i = 0; i < X.size(); i++)
+	{
+		predictions.push_back(DecisionTreeClassification::traverseTree(X[i], root));
+	}
 	
 	return predictions;
 }
@@ -51,17 +55,92 @@ Node* DecisionTreeClassification::growTree(std::vector<std::vector<double>>& X, 
 		--- define stopping criteria
     	--- Loop through candidate features and potential split thresholds.
 		--- greedily select the best split according to information gain
-		---grow the children that result from the split
+		--- grow the children that result from the split
 	*/
 	
-	double best_gain = -1.0; // set the best gain to -1
+	double best_gain = -1.0, gain; // set the best gain to -1
 	int split_idx = NULL; // split index
 	double split_thresh = NULL; // split threshold
-	
+	int num_feat;
+
+	double value;
+	std::vector<double> labels=y, y_left,y_right;
+	std::vector<std::vector<double>> X_left, X_right;
 	// TODO
-	
+
 	Node* left; // grow the left tree
 	Node* right;  // grow the right tree
+
+	// stopping criteria
+	std::sort(labels.begin(), labels.end());
+	std::unique(labels.begin(),labels.end());
+	num_feat = X[0].size();
+
+	if ((depth >= max_depth) || (X.size() < min_samples_split) || (labels.size() == 1) || (num_feat == 1))
+	{
+		left = nullptr;
+		right = nullptr;
+		
+		value = DecisionTreeClassification::mostCommonlLabel(y);
+
+		return new Node(split_idx, split_thresh, left, right, value);
+	}
+	
+	std::vector<double> column(X.size(), 0), values;
+
+	for (int j = 0; j < num_feat; j++) // cycle on the features
+	{
+		for (int k = 0; k < X.size(); k++)
+		{
+			column[k] = X[k][j];
+		}
+		values = column;
+		std::sort(values.begin(), values.end());
+		std::unique(values.begin(), values.end());
+
+		for (int k = 0; k < values.size()-1; k++)
+		{
+			gain = DecisionTreeClassification::informationGain(y, column, values[k]);
+			if (gain > best_gain)
+			{
+				best_gain = gain;
+				split_idx = j;
+				split_thresh = values[k];
+			}
+		}
+	}
+
+	std::vector<double> newrow(num_feat - 1, 0);
+
+	for (int i = 0; i < X.size(); i++)
+	{
+
+		for (int j = 0; j < split_idx; j++) // eliminate feature from X
+		{
+			newrow[j] = X[i][j];
+		}
+		for (int j = split_idx; j < num_feat - 1; j++)
+		{
+			newrow[j] = X[i][j - 1];
+		}
+
+		if (X[i][split_idx] <= split_thresh)
+		{
+			y_left.push_back(y[i]);
+			X_left.push_back(newrow);
+		}
+		else
+		{
+			y_right.push_back(y[i]);
+			X_right.push_back(newrow);
+		}
+	}
+
+	
+	left = growTree(X_left, y_left, depth + 1);
+	right = growTree(X_right, y_right, depth + 1);
+
+
 	return new Node(split_idx, split_thresh, left, right); // return a new node with the split index, split threshold, left tree, and right tree
 }
 
@@ -70,6 +149,8 @@ Node* DecisionTreeClassification::growTree(std::vector<std::vector<double>>& X, 
 double DecisionTreeClassification::informationGain(std::vector<double>& y, std::vector<double>& X_column, double split_thresh) {
 	// parent loss // You need to caculate entropy using the EntropyFunctions class//
 	double parent_entropy = EntropyFunctions::entropy(y);
+	double entropy_a, entropy_b, child_entropy;
+	double length=y.size();
 
 	/* Implement the following:
 	   --- generate split
@@ -78,6 +159,23 @@ double DecisionTreeClassification::informationGain(std::vector<double>& y, std::
 	*/
 	double ig = 0.0;
 	
+	std::vector<double> a, b;
+	for (int i = 0; i < y.size(); i++)
+	{
+		if (X_column[i] <= split_thresh)
+		{
+			a.push_back(y[i]);
+		}
+		else {
+			b.push_back(y[i]);
+		}
+	}
+
+	entropy_a = EntropyFunctions::entropy(a);
+	entropy_b = EntropyFunctions::entropy(b);
+	child_entropy = (a.size()*entropy_a+b.size()*entropy_b)/length;
+
+	ig = parent_entropy - child_entropy;
 	// TODO
 	
 	return ig;
@@ -86,10 +184,38 @@ double DecisionTreeClassification::informationGain(std::vector<double>& y, std::
 
 // mostCommonlLabel function: Finds the most common label in a vector of labels.//
 double DecisionTreeClassification::mostCommonlLabel(std::vector<double>& y) {	
-	double most_common = 0.0;
+	int most_common_quantity = 0, most_common_index = 0;
 	
 	// TODO
-	return most_common;
+	std::vector<double> labels;
+	labels = y;
+	std::sort(labels.begin(), labels.end());
+	std::unique(labels.begin(), labels.end());
+	std::vector<int> quantity(labels.size(), 0);
+
+	for (int i = 0; i < y.size(); i++)
+	{
+		for (int j = 0; j < labels.size(); j++)
+		{
+			if (y[i] == labels[j])
+			{
+				quantity[j]++;
+				break;
+			}
+		}
+	}
+
+	for (int k = 0; k < labels.size(); k++)
+	{
+		if (quantity[k] > most_common_quantity)
+		{
+			most_common_quantity = quantity[k];
+			most_common_index = k;
+		}
+	}
+	
+
+	return labels[most_common_index];
 }
 
 
@@ -103,6 +229,20 @@ double DecisionTreeClassification::traverseTree(std::vector<double>& x, Node* no
 	*/
 	// TODO
 	
+	if (node->isLeafNode())
+	{
+		return node->value;
+	}
+	else if (x[node->feature]<=node->threshold)
+	{
+		return DecisionTreeClassification::traverseTree(x, node->left);
+	}
+	else 
+	{
+		return DecisionTreeClassification::traverseTree(x, node->right);
+	}
+
+
 	return 0.0;
 }
 
