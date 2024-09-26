@@ -112,7 +112,6 @@ double DecisionTreeRegression::traverseTree(std::vector<double>& x, Node* node) 
 		return node->value;
 	}
 
-
 	return 0.0;
 }
 

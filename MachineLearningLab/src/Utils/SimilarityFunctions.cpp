@@ -28,17 +28,18 @@ double SimilarityFunctions::hammingDistance(const std::vector<double>& v1, const
 
 /// jaccardDistance function: Calculates the Jaccard distance between two vectors.
 double SimilarityFunctions::jaccardDistance(const std::vector<double>& a, const std::vector<double>& b) {
-	if (a.size() != b.size()) {
-		throw std::invalid_argument("Vectors must be of equal length.");
-	}
-	double num = 0.0;
-	double den = 0.0;
-	double dist = 0.0;
-	
-	// Compute the Jaccard Distance
-	// TODO
-
-	return dist;
+    if (a.size() != b.size()) {
+        throw std::invalid_argument("Vectors must be of equal length.");
+    }
+    double num = 0.0;
+    double den = 0.0;
+    double dist = 0.0;
+    for (int i = 0; i < a.size(); i++) {
+        num += std::min(a[i], b[i]);
+        den += std::max(a[i], b[i]);
+    }
+    dist = 1 - (num / den);
+    return dist;
 }
 
 
