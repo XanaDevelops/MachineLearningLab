@@ -50,10 +50,20 @@ double SimilarityFunctions::cosineDistance(const std::vector<double>& a, const s
 	double dotProduct = 0.0;
 	double normA = 0.0;
 	double normB = 0.0;
-	double cosinedist = 0.0;	
+	double cosinedist = 0.0;
+
+	std::vector<double> zero(a.size(), 0);
+	normA = SimilarityFunctions::euclideanDistance(a, zero);
+	normB = SimilarityFunctions::euclideanDistance(b, zero);
+
+	for (int i = 0; i < a.size(); i++)
+	{
+		dotProduct += a[i] * b[i];
+	}
+
+	cosinedist = dotProduct / (normA * normB);
 	
 	// Compute the cosine Distance
-	// TODO
 
 	
 	return cosinedist;
