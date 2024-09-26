@@ -39,6 +39,7 @@ std::vector<double> DecisionTreeRegression::predict(std::vector<std::vector<doub
 	
 	// Implement the function
 	// TODO
+	std::cerr << "HOLA";
 	return predictions;
 }
 
@@ -56,8 +57,16 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 		--- Find the best split threshold for the current feature.
 		--- grow the children that result from the split
 	*/
+
+
 	
 	// TODO
+	//define stopping criteria
+	if (depth >= max_depth || y.size() < min_samples_split) {
+		return nullptr;
+	}
+
+
 
 	Node* left;
 	Node* right;
@@ -66,7 +75,7 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 
 
 /// meanSquaredError function: Calculates the mean squared error for a given split threshold.
-double DecisionTreeRegression::meanSquaredError(std::vector<double>& y, std::vector<double>& X_column, double split_thresh) {
+double DecisionTreeRegression::meanSquaredError(std::vector<double>& y, std::vector<double>&	, double split_thresh) {
 
 	double mse = 0.0;
 	
@@ -82,8 +91,11 @@ double DecisionTreeRegression::mean(std::vector<double>& values) {
 	double meanValue = 0.0;
 	
 	// calculate the mean
-	// TODO
-	
+	for (int i = 0; i < values.size(); i++) {
+		meanValue += values[i];
+	}
+	meanValue /= values.size();
+
 	return meanValue;
 }
 
@@ -96,6 +108,10 @@ double DecisionTreeRegression::traverseTree(std::vector<double>& x, Node* node) 
 		--- Otherwise, traverse the right subtree
 	*/
 	// TODO
+	if (node->left == nullptr && node->right == nullptr) {
+		return node->value;
+	}
+
 
 	return 0.0;
 }
