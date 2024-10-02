@@ -58,7 +58,7 @@ std::vector<double> KNNClassifier::predict(const std::vector<std::vector<double>
         //calculate distances
         for (int j = 0; j < X_train_.size(); j++) {
             std::vector<double> trainPoint = X_train_[j];
-            double dist = SimilarityFunctions::euclideanDistance(testPoint, trainPoint);
+            double dist = SimilarityFunctions::manhattanDistance(testPoint, trainPoint);
             distances.push_back(std::make_pair(y_train_[j], dist));
         }
         
