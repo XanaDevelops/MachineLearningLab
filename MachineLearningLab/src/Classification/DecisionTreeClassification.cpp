@@ -73,7 +73,8 @@ Node* DecisionTreeClassification::growTree(std::vector<std::vector<double>>& X, 
 
 	// stopping criteria
 	std::sort(labels.begin(), labels.end());
-	std::unique(labels.begin(),labels.end());
+	auto new_end=std::unique(labels.begin(),labels.end());
+	labels.erase(new_end, labels.end());
 	num_feat = X[0].size();
 
 	if ((depth >= max_depth) || (X.size() < min_samples_split) || (labels.size() == 1) || (num_feat == 1))
@@ -96,7 +97,8 @@ Node* DecisionTreeClassification::growTree(std::vector<std::vector<double>>& X, 
 		}
 		values = column;
 		std::sort(values.begin(), values.end());
-		std::unique(values.begin(), values.end());
+		auto new_end=std::unique(values.begin(), values.end());
+		values.erase(new_end, values.end());
 
 		for (int k = 0; k < values.size()-1; k++)
 		{
@@ -121,7 +123,7 @@ Node* DecisionTreeClassification::growTree(std::vector<std::vector<double>>& X, 
 		}
 		for (int j = split_idx; j < num_feat - 1; j++)
 		{
-			newrow[j] = X[i][j - 1];
+			newrow[j] = X[i][j + 1];
 		}
 
 		if (X[i][split_idx] <= split_thresh)
@@ -137,8 +139,8 @@ Node* DecisionTreeClassification::growTree(std::vector<std::vector<double>>& X, 
 	}
 
 	
-	left = growTree(X_left, y_left, depth + 1);
-	right = growTree(X_right, y_right, depth + 1);
+	left = growTree(X_left, y_left, depth + 1); // grow left
+	right = growTree(X_right, y_right, depth + 1); // grow right
 
 
 	return new Node(split_idx, split_thresh, left, right); // return a new node with the split index, split threshold, left tree, and right tree
@@ -190,7 +192,8 @@ double DecisionTreeClassification::mostCommonlLabel(std::vector<double>& y) {
 	std::vector<double> labels;
 	labels = y;
 	std::sort(labels.begin(), labels.end());
-	std::unique(labels.begin(), labels.end());
+	auto new_end=std::unique(labels.begin(), labels.end());
+	labels.erase(new_end, labels.end());
 	std::vector<int> quantity(labels.size(), 0);
 
 	for (int i = 0; i < y.size(); i++)
