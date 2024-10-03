@@ -7,6 +7,7 @@
 
 class SimilarityFunctions {
 public:
+    static double dotProduct(const std::vector<double>& a, const std::vector<double>& b);
     static double hammingDistance(const std::vector<double>& a, const std::vector<double>& b);
     static double jaccardDistance(const std::vector<double>& a, const std::vector<double>& b);
     static double cosineDistance(const std::vector<double>& a, const std::vector<double>& b);

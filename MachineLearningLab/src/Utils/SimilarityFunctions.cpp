@@ -3,6 +3,24 @@
 #include <stdexcept>
 
 
+
+/// dotProduct function: Calculates the dot product between two vectors.///
+double SimilarityFunctions::dotProduct(const std::vector<double>& a, const std::vector<double>& b)
+{
+	if (a.size() != b.size()) {
+		throw std::invalid_argument("Vectors must be of equal length.");
+	}
+
+	double dotProduct = 0.0;
+
+	for (int i = 0; i < a.size(); i++)
+	{
+		dotProduct += a[i] * b[i];
+	}
+
+	return dotProduct;
+
+}
 										// SimilarityFunctions class implementation //
 			
 
@@ -48,7 +66,7 @@ double SimilarityFunctions::cosineDistance(const std::vector<double>& a, const s
 	if (a.size() != b.size()) {
 		throw std::invalid_argument("Vectors must be of equal length.");
 	}
-	double dotProduct = 0.0;
+	double ABproduct = 0.0;
 	double normA = 0.0;
 	double normB = 0.0;
 	double cosinedist = 0.0;
@@ -56,13 +74,9 @@ double SimilarityFunctions::cosineDistance(const std::vector<double>& a, const s
 	std::vector<double> zero(a.size(), 0);
 	normA = SimilarityFunctions::euclideanDistance(a, zero);
 	normB = SimilarityFunctions::euclideanDistance(b, zero);
-
-	for (int i = 0; i < a.size(); i++)
-	{
-		dotProduct += a[i] * b[i];
-	}
-
-	cosinedist = dotProduct / (normA * normB);
+	ABproduct = SimilarityFunctions::dotProduct(a, b);
+	
+	cosinedist = ABproduct / (normA * normB);
 	
 	// Compute the cosine Distance
 
