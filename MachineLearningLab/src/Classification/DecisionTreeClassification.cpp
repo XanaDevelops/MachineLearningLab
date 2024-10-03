@@ -29,7 +29,7 @@ DecisionTreeClassification::DecisionTreeClassification(int min_samples_split, in
 // Fit is a function to fits a decision tree to the given data.//
 void DecisionTreeClassification::fit(std::vector<std::vector<double>>& X, std::vector<double>& y) {
 	n_feats = (n_feats == 0) ? X[0].size() : min(n_feats, static_cast<int>(X[0].size()));
-	root = growTree(X, y); //should't here be (X, y, 0)  ???
+	root = growTree(X, y); 
 }
 
 
