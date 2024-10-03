@@ -231,22 +231,27 @@ double DecisionTreeClassification::traverseTree(std::vector<double>& x, Node* no
 		--- Otherwise, traverse the right subtree
 	*/
 	// TODO
+
+	std::vector<double> newx=x;
 	
 	if (node->isLeafNode())
 	{
 		return node->value;
 	}
-	else if (x[node->feature]<=node->threshold)
-	{
-		return DecisionTreeClassification::traverseTree(x, node->left);
-	}
-	else 
-	{
-		return DecisionTreeClassification::traverseTree(x, node->right);
-	}
+	else
+	{	
+		newx.erase(newx.begin() + node->feature);
 
+		if (x[node->feature] <= node->threshold)
+		{
+			return DecisionTreeClassification::traverseTree(newx, node->left);
+		}
+		else
+		{
+			return DecisionTreeClassification::traverseTree(newx, node->right);
+		}
 
-	return 0.0;
+	}
 }
 
 
