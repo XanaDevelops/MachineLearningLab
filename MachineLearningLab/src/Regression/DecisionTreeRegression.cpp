@@ -11,6 +11,7 @@
 #include <set>
 #include <numeric>
 #include <unordered_set>
+#include "../Utils/EntropyFunctions.h"
 using namespace System::Windows::Forms; // For MessageBox
 
 
@@ -39,7 +40,9 @@ std::vector<double> DecisionTreeRegression::predict(std::vector<std::vector<doub
 	
 	// Implement the function
 	// TODO
-	std::cerr << "HOLA";
+	for (int i = 0; i < X.size(); i++) {
+		predictions.push_back(traverseTree(X[i], root));
+	}
 	return predictions;
 }
 
@@ -51,36 +54,82 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 	int split_idx = -1;
 	double split_thresh = 0.0;
 
+	Node* left = nullptr;
+	Node* right = nullptr;
 	/* Implement the following:
 		--- define stopping criteria
     	--- Loop through candidate features and potential split thresholds.
 		--- Find the best split threshold for the current feature.
 		--- grow the children that result from the split
 	*/
-
-
 	
 	// TODO
 	//define stopping criteria
-	if (depth >= max_depth || y.size() < min_samples_split) {
+	if (depth > max_depth || y.size() < min_samples_split) {
 		return nullptr;
+	}
+
+	int best_idx = 0, best_thrs = 0;
+	std::vector<double> best_left, best_right;
+	double maxSE = -std::numeric_limits<double>::infinity();
+	for (int y_idx = 0; y_idx < y.size(); y_idx++) {
+		for (double y_val : y) { //threshold
+			std::vector<double> left_val = std::vector<double>();
+			std::vector<double> right_val = std::vector<double>();
+			//split
+			for (std::vector<double> X_val : X) {
+				if (X_val[y_idx] <= y_val) {
+					left_val.push_back(X_val[y_idx]);
+				}
+				else {
+					right_val.push_back(X_val[y_idx]);
+				}
+			}
+			//check not empty
+			if (left_val.size() == 0 || right_val.size() == 0) {
+				continue;
+			}
+			//calculate mse
+			double mse = meanSquaredError(y, X[y_idx], y_val);
+			if (mse > maxSE) {
+				best_idx = y_idx;
+				best_thrs = y_val;
+				best_left = left_val;
+				best_right = right_val;
+				maxSE = mse;
+			}
+
+		}	
+	}
+
+	if (maxSE > 0) {
+		left = growTree(X, best_left, depth + 1);
+		right = growTree(X, best_right, depth + 1);
+		return new Node(best_idx, best_thrs, left, right);
+	}
+	else {
+		return new Node(mean(y));
 	}
 
 
 
-	Node* left;
-	Node* right;
-	return new Node(split_idx, split_thresh, left, right); // return a new node with the split index, split threshold, left tree, and right tree
+	
+	//return new Node(split_idx, split_thresh, left, right); // return a new node with the split index, split threshold, left tree, and right tree
 }
 
 
 /// meanSquaredError function: Calculates the mean squared error for a given split threshold.
-double DecisionTreeRegression::meanSquaredError(std::vector<double>& y, std::vector<double>&	, double split_thresh) {
+double DecisionTreeRegression::meanSquaredError(std::vector<double>& y, std::vector<double>& X_column, double split_thresh) { //investigate split_tresh
 
 	double mse = 0.0;
 	
-	// Calculate the mse
-	// TODO
+
+    // Calculate the mse
+    for (int i = 0; i < y.size(); i++) { //check param y
+        double error = y[i] - X_column[i];
+        mse += error * error;
+    }
+    mse /= y.size();
 	
 	return mse;
 }
@@ -112,7 +161,12 @@ double DecisionTreeRegression::traverseTree(std::vector<double>& x, Node* node) 
 		return node->value;
 	}
 
-	return 0.0;
+	if (x[node->value] <= node->threshold) {
+		return traverseTree(x, node->left);
+	}
+	else {
+		return traverseTree(x, node->right);
+	}
 }
 
 
