@@ -50,6 +50,7 @@ std::vector<double> DecisionTreeRegression::predict(std::vector<std::vector<doub
 // growTree function: Grows a decision tree regression model using the given data and parameters //
 Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std::vector<double>& y, int depth) {
 
+	
 
 	int split_idx = -1;
 	double split_thresh = 0.0;
@@ -63,52 +64,77 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 		--- grow the children that result from the split
 	*/
 	
-	// TODO
+	//X -> array of points
+	//y -> labels for each d
+
 	//define stopping criteria
 	if (depth > max_depth || y.size() < min_samples_split) {
-		return nullptr;
+		return new Node(0,0, nullptr, nullptr, mean(y));
 	}
 
 	int best_idx = 0, best_thrs = 0;
-	std::vector<double> best_left, best_right;
+	std::vector<std::vector<double>> best_X_left, best_X_right;
+	std::vector<double> best_y_left, best_y_right;
+
 	double maxSE = -std::numeric_limits<double>::infinity();
-	for (int y_idx = 0; y_idx < y.size(); y_idx++) {
+	for (int x_idx = 0; x_idx < X[0].size(); x_idx++) {
 		for (double y_val : y) { //threshold
-			std::vector<double> left_val = std::vector<double>();
-			std::vector<double> right_val = std::vector<double>();
+			std::vector<std::vector<double>> left_val, right_val;
+			std::vector<double> left_y, right_y;
 			//split
-			for (std::vector<double> X_val : X) {
-				if (X_val[y_idx] <= y_val) {
-					left_val.push_back(X_val[y_idx]);
+			for (int i = 0; i < X.size();i++) {
+				if (X[i][x_idx] <= y_val) {
+					left_val.push_back(X[i]);
+					left_y.push_back(y[i]);
 				}
 				else {
-					right_val.push_back(X_val[y_idx]);
+					right_val.push_back(X[i]);
+					right_y.push_back(y[i]);
 				}
 			}
 			//check not empty
+
 			if (left_val.size() == 0 || right_val.size() == 0) {
 				continue;
 			}
 			//calculate mse
-			double mse = meanSquaredError(y, X[y_idx], y_val);
+			std::vector<double> X_Column;
+			//get column values
+			for (std::vector<double> X_val : X) {
+				X_Column.push_back(X_val[x_idx]);
+			}
+
+			double mse = meanSquaredError(y, X_Column, y_val);
 			if (mse > maxSE) {
-				best_idx = y_idx;
+				best_idx = x_idx;
 				best_thrs = y_val;
-				best_left = left_val;
-				best_right = right_val;
+				best_X_left = left_val;
+				best_X_right = right_val;
+				best_y_left = left_y;
+				best_y_right = right_y;
 				maxSE = mse;
 			}
 
 		}	
 	}
 
+	//eliminate feature from splits of X
+	for (int i = 0; i < best_X_left.size(); i++) {
+		best_X_left[i].erase(best_X_left[i].begin() + best_idx);
+	}
+	for (int i = 0; i < best_X_right.size(); i++) {
+		best_X_right[i].erase(best_X_right[i].begin() + best_idx);
+	}
+
+
 	if (maxSE > 0) {
-		left = growTree(X, best_left, depth + 1);
-		right = growTree(X, best_right, depth + 1);
+		left = growTree(best_X_left, best_y_left, depth + 1);
+		right = growTree(best_X_right, best_y_right, depth + 1);
+
 		return new Node(best_idx, best_thrs, left, right);
 	}
 	else {
-		return new Node(mean(y));
+		return new Node(0, 0, nullptr, nullptr, mean(y));
 	}
 
 
@@ -121,17 +147,39 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 /// meanSquaredError function: Calculates the mean squared error for a given split threshold.
 double DecisionTreeRegression::meanSquaredError(std::vector<double>& y, std::vector<double>& X_column, double split_thresh) { //investigate split_tresh
 
-	double mse = 0.0;
-	
+	// Initialize variables to hold the sum and count for left and right regions
+	double sum_left = 0, sum_right = 0;
+	int count_left = 0, count_right = 0;
 
-    // Calculate the mse
-    for (int i = 0; i < y.size(); i++) { //check param y
-        double error = y[i] - X_column[i];
-        mse += error * error;
-    }
-    mse /= y.size();
-	
-	return mse;
+	// Partition data into two groups based on the split threshold
+	for (size_t i = 0; i < X_column.size(); ++i) {
+		if (X_column[i] <= split_thresh) {
+			sum_left += y[i];
+			count_left++;
+		}
+		else {
+			sum_right += y[i];
+			count_right++;
+		}
+	}
+
+	// Calculate means for left and right groups
+	double mean_left = (count_left > 0) ? sum_left / count_left : 0;
+	double mean_right = (count_right > 0) ? sum_right / count_right : 0;
+
+	// Compute MSE for both groups
+	double mse_left = 0, mse_right = 0;
+	for (size_t i = 0; i < X_column.size(); ++i) {
+		if (X_column[i] <= split_thresh) {
+			mse_left += (y[i] - mean_left) * (y[i] - mean_left);
+		}
+		else {
+			mse_right += (y[i] - mean_right) * (y[i] - mean_right);
+		}
+	}
+
+	// Return the total MSE, normalized by the number of elements
+	return (mse_left + mse_right) / y.size();
 }
 
 // mean function: Calculates the mean of a given vector of doubles.//
@@ -157,11 +205,11 @@ double DecisionTreeRegression::traverseTree(std::vector<double>& x, Node* node) 
 		--- Otherwise, traverse the right subtree
 	*/
 	// TODO
-	if (node->left == nullptr && node->right == nullptr) {
+	if (node->isLeafNode()) {
 		return node->value;
 	}
 
-	if (x[node->value] <= node->threshold) {
+	if (x[node->feature] <= node->threshold) {
 		return traverseTree(x, node->left);
 	}
 	else {
