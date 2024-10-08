@@ -70,7 +70,8 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 		return new Node(0,0, nullptr, nullptr, mean(y));
 	}
 
-	int best_idx = -1, best_thrs = -1;
+	int best_idx = -1;
+	double best_thrs = -1;
 	std::vector<std::vector<double>> best_X_left, best_X_right;
 	std::vector<double> best_y_left, best_y_right;
 
