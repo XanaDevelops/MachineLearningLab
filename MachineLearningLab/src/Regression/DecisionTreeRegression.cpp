@@ -70,7 +70,7 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 		return new Node(0,0, nullptr, nullptr, mean(y));
 	}
 
-	int best_idx = 0, best_thrs = 0;
+	int best_idx = -1, best_thrs = -1;
 	std::vector<std::vector<double>> best_X_left, best_X_right;
 	std::vector<double> best_y_left, best_y_right;
 
@@ -84,9 +84,8 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 			X_Column.push_back(X_val[x_idx]);
 		}
 
-		std::set<double> unique_vals(X_Column.begin(), X_Column.end());
 
-		for (double split_val : unique_vals) { //threshold
+		for (double split_val : X_Column) { //threshold
 			std::vector<std::vector<double>> left_val, right_val;
 			std::vector<double> left_y, right_y;
 			//split
@@ -123,12 +122,12 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 	}
 
 	//eliminate feature from splits of X
-	for (int i = 0; i < best_X_left.size(); i++) {
+	/*for (int i = 0; i < best_X_left.size(); i++) {
 		best_X_left[i].erase(best_X_left[i].begin() + best_idx);
 	}
 	for (int i = 0; i < best_X_right.size(); i++) {
 		best_X_right[i].erase(best_X_right[i].begin() + best_idx);
-	}
+	}*/
 
 
 	if (maxSE > 0 && maxSE != std::numeric_limits<double>::infinity()) {
