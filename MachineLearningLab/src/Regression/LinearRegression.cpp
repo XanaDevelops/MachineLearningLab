@@ -69,7 +69,85 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
 
 }
 
+void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, const std::vector<double>& trainLabels, double learning_rate, int epoch) {
+    //This implementation is using Gradient Descend Method
 
+    /* Implement the following:
+        1 --- Initialize weights for each class
+        2 --- Loop over each class label
+        3 --- Convert the problem into a binary classification problem
+        4 --- Loop over training epochs
+        5 --- Add bias term to the training example
+        6 --- Calculate weighted sum of features
+        7 --- Calculate the sigmoid of the weighted sum
+        8 --- Update weights using gradient descent
+    */
+
+	//checking sizes
+    m_coefficients = Eigen::VectorXd(1, 1);
+    m_coefficients.setZero();
+    if (trainData.size() != trainLabels.size()) {
+		MessageBox::Show("The sizes of trainData and trainLabels do not match.");
+		return;
+	}
+
+	int num_features = trainData[0].size();
+	int num_samples = trainData.size();
+	Eigen::VectorXd coefficients(num_features + 1);
+
+	// loop over each class label
+	std::vector<double> labels = trainLabels;
+	std::sort(labels.begin(), labels.end());
+	auto new_end = std::unique(labels.begin(), labels.end());
+	labels.erase(new_end, labels.end());
+   
+	// 2
+	for (int i = 0; i < labels.size(); i++)
+	{
+		// 1
+		Eigen::VectorXd weights(num_features + 1);
+		weights.setZero();
+		// 3
+		std::vector<int> binary_y(num_samples, 0);
+		for (int k = 0; k < num_samples; k++)
+		{
+			if (trainLabels[k] == labels[i])
+			{
+				binary_y[k] = 1;
+			}
+			else {
+				binary_y[k] = 0;
+			}
+		}
+
+		// 4
+		for (int p = 0; p < epoch; p++)
+		{
+			// 5 - 6
+			Eigen::MatrixXd X(num_samples, num_features + 1);
+			X.col(0) = Eigen::VectorXd::Ones(num_samples);
+			for (int k = 0; k < num_samples; k++) {
+				for (int j = 0; j < num_features; j++) {
+					X(k, j + 1) = trainData[k][j];
+				}
+			}
+			Eigen::VectorXd y(binary_y.size());
+			for (int k = 0; k < binary_y.size(); k++) {
+				y(k) = binary_y[k];
+			}
+			Eigen::VectorXd scores = X * weights;
+			Eigen::VectorXd sigmoid = 1.0 / (1.0 + (-scores.array()).exp());
+			Eigen::VectorXd error = y - sigmoid;
+			Eigen::VectorXd gradient = X.transpose() * error;
+			weights += learning_rate * gradient;
+		}
+		coefficients = weights;
+	}
+	m_coefficients = coefficients;
+
+
+
+}
 // Function to make predictions on new data //
 std::vector<double> LinearRegression::predict(const std::vector<std::vector<double>>& testData) {
 
@@ -110,6 +188,9 @@ std::vector<double> LinearRegression::predict(const std::vector<std::vector<doub
     return result;
 }
 
+std::vector<double> LinearRegression::predict(const std::vector<std::vector<double>>& testData, int gradient) {
+	return {};
+}
 
 
 /// runLinearRegression: this function runs the Linear Regression algorithm on the given dataset and 

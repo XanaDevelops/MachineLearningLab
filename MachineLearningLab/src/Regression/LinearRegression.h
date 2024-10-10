@@ -16,7 +16,9 @@
 class LinearRegression {
 public:
     void fit(const std::vector<std::vector<double>>& trainData, const std::vector<double>& trainLabels);
+    void fit(const std::vector<std::vector<double>>& trainData, const std::vector<double>& trainLabels, double learning_rate, int epoch);
     std::vector<double> predict(const std::vector<std::vector<double>>& testData);
+    std::vector<double> predict(const std::vector<std::vector<double>>& testData, int gradient);
     std::tuple<double, double, double, double, double, double,
         std::vector<double>, std::vector<double>,
         std::vector<double>, std::vector<double>>
