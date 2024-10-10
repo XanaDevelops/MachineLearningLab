@@ -76,7 +76,7 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 	std::vector<double> best_y_left, best_y_right;
 
 	double maxSE = std::numeric_limits<double>::infinity();
-	for (int x_idx = 0; x_idx < X[0].size(); x_idx++) {
+	for (int x_idx = 0; x_idx < n_feats; x_idx++) { //default is 0 so fit() sets to X[0].size()
 		
 		
 		std::vector<double> X_Column;
@@ -121,15 +121,6 @@ Node* DecisionTreeRegression::growTree(std::vector<std::vector<double>>& X, std:
 
 		}	
 	}
-
-	//eliminate feature from splits of X
-	/*for (int i = 0; i < best_X_left.size(); i++) {
-		best_X_left[i].erase(best_X_left[i].begin() + best_idx);
-	}
-	for (int i = 0; i < best_X_right.size(); i++) {
-		best_X_right[i].erase(best_X_right[i].begin() + best_idx);
-	}*/
-
 
 	if (maxSE > 0 && maxSE != std::numeric_limits<double>::infinity()) {
 		left = growTree(best_X_left, best_y_left, depth + 1);
