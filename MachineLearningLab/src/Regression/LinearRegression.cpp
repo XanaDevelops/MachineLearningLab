@@ -24,7 +24,7 @@
 #include <Eigen/Eigenvalues>
 using namespace System::Windows::Forms; // For MessageBox
 
-
+#define USE_MATRIX 0
 
 										///  LinearRegression class implementation  ///
 
@@ -69,10 +69,10 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
 
 }
 
-void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, const std::vector<double>& trainLabels, double learning_rate, int epoch) {
+void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, const std::vector<double>& trainLabels, double learning_rate, int num_iterations) {
     //This implementation is using Gradient Descend Method
 
-    /* Implement the following:
+	/* Implement the following: (copied from Logistic Regression)
         1 --- Initialize weights for each class
         2 --- Loop over each class label
         3 --- Convert the problem into a binary classification problem
@@ -83,71 +83,35 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
         8 --- Update weights using gradient descent
     */
 
-	//checking sizes
-    m_coefficients = Eigen::VectorXd(1, 1);
-    m_coefficients.setZero();
-    if (trainData.size() != trainLabels.size()) {
-		MessageBox::Show("The sizes of trainData and trainLabels do not match.");
-		return;
-	}
-
-	int num_features = trainData[0].size();
 	int num_samples = trainData.size();
-	Eigen::VectorXd coefficients(num_features + 1);
+    int num_feats = trainData[0].size();
+    
 
-	// loop over each class label
-	std::vector<double> labels = trainLabels;
-	std::sort(labels.begin(), labels.end());
-	auto new_end = std::unique(labels.begin(), labels.end());
-	labels.erase(new_end, labels.end());
-   
-	// 2
-	for (int i = 0; i < labels.size(); i++)
-	{
-		// 1
-		Eigen::VectorXd weights(num_features + 1);
-		weights.setZero();
-		// 3
-		std::vector<int> binary_y(num_samples, 0);
-		for (int k = 0; k < num_samples; k++)
-		{
-			if (trainLabels[k] == labels[i])
-			{
-				binary_y[k] = 1;
-			}
-			else {
-				binary_y[k] = 0;
-			}
-		}
+    m_coefficients = Eigen::VectorXd::Zero(num_feats);
 
-		// 4
-		for (int p = 0; p < epoch; p++)
-		{
-			// 5 - 6
-			Eigen::MatrixXd X(num_samples, num_features + 1);
-			X.col(0) = Eigen::VectorXd::Ones(num_samples);
-			for (int k = 0; k < num_samples; k++) {
-				for (int j = 0; j < num_features; j++) {
-					X(k, j + 1) = trainData[k][j];
-				}
-			}
-			Eigen::VectorXd y(binary_y.size());
-			for (int k = 0; k < binary_y.size(); k++) {
-				y(k) = binary_y[k];
-			}
-			Eigen::VectorXd scores = X * weights;
-			Eigen::VectorXd sigmoid = 1.0 / (1.0 + (-scores.array()).exp());
-			Eigen::VectorXd error = y - sigmoid;
-			Eigen::VectorXd gradient = X.transpose() * error;
-			weights += learning_rate * gradient;
-		}
-		coefficients = weights;
-	}
-	m_coefficients = coefficients;
+	//use gradient descent to update weights
+    for (int i = 0; i < num_iterations; i++) {
+        std::vector<double> gradient(num_feats, 0);
+        for (int j = 0; j < num_samples; j++) {
+            double prediction = 0;
+            for (int k = 0; k < num_feats; k++) {
+                prediction += m_coefficients[k] * trainData[j][k];
+            }
+            double error = trainLabels[j] - prediction;
+            for (int k = 0; k < num_feats; k++) {
+                gradient[k] += error * trainData[j][k];
+            }
 
-
+        }
+        for (int j = 0; j < num_feats; j++) {
+            m_coefficients[j] -= (learning_rate * gradient[j]) / num_samples;
+        }
+    }
 
 }
+
+
+
 // Function to make predictions on new data //
 std::vector<double> LinearRegression::predict(const std::vector<std::vector<double>>& testData) {
 
@@ -189,7 +153,32 @@ std::vector<double> LinearRegression::predict(const std::vector<std::vector<doub
 }
 
 std::vector<double> LinearRegression::predict(const std::vector<std::vector<double>>& testData, int gradient) {
-	return {};
+	//Using Gradient Descent
+	/* Implement the following: (copied from Logistic Regression)
+		--- Loop over each test example
+		--- Add bias term to the test example
+		--- Calculate scores for each class by computing the weighted sum of features
+		--- Predict class label with the highest score
+	*/
+    std::vector<double> predictions;
+
+    int num_features = testData[0].size();
+    int num_samples = testData.size();
+
+	for (int i = 0; i < num_samples; i++)
+	{
+        double prediction = 0;
+		for (int j = 0; j < num_features; j++)
+		{
+			prediction += m_coefficients[j] * testData[i][j];
+		}
+        prediction += gradient;
+		predictions.push_back(prediction);
+	}
+
+
+    return predictions;
+	
 }
 
 
@@ -253,19 +242,28 @@ std::tuple<double, double, double, double, double, double,
         DataPreprocessor::splitDataset(dataset, trainRatio, trainData, trainLabels, testData, testLabels);
 
         // Fit the model to the training data
+#if USE_MATRIX == 1
         fit(trainData, trainLabels);
-
+#else
+		fit(trainData, trainLabels, 0.1, 1000);
+#endif
         // Make predictions on the test data
+#if USE_MATRIX == 1
         std::vector<double> testPredictions = predict(testData);
-
+#else
+		std::vector<double> testPredictions = predict(testData, 1);
+#endif
         // Calculate evaluation metrics (e.g., MAE, MSE)
         double test_mae = Metrics::meanAbsoluteError(testLabels, testPredictions);
         double test_rmse = Metrics::rootMeanSquaredError(testLabels, testPredictions);
         double test_rsquared = Metrics::rSquared(testLabels, testPredictions);
 
         // Make predictions on the training data
+#if USE_MATRIX == 1
         std::vector<double> trainPredictions = predict(trainData);
-
+#else
+        std::vector<double> trainPredictions = predict(trainData, 1);
+#endif
         // Calculate evaluation metrics for training data
         double train_mae = Metrics::meanAbsoluteError(trainLabels, trainPredictions);
         double train_rmse = Metrics::rootMeanSquaredError(trainLabels, trainPredictions);
