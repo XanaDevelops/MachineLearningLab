@@ -41,8 +41,32 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
 		--- Calculate the coefficients using the least squares method
 		--- Store the coefficients for future predictions
 	*/
-	
-	// TODO
+    m_coefficients = Eigen::VectorXd(1,1);
+	m_coefficients.setZero();
+	//checking sizes
+	if (trainData.size() != trainLabels.size()) {
+		MessageBox::Show("The sizes of trainData and trainLabels do not match.");
+		return;
+	}
+
+	// Convert trainData to matrix representation and construct the design matrix X
+	Eigen::MatrixXd X(trainData.size(), trainData[0].size() + 1);
+	X.col(0) = Eigen::VectorXd::Ones(trainData.size());
+	for (int i = 0; i < trainData.size(); i++) {
+		for (int j = 0; j < trainData[0].size(); j++) {
+			X(i, j + 1) = trainData[i][j];
+		}
+	}
+	//convert trainLabels to matrix representation
+	Eigen::VectorXd y(trainLabels.size());
+	for (int i = 0; i < trainLabels.size(); i++) {
+		y(i) = trainLabels[i];
+	}
+	// Calculate the coefficients using the least squares method
+    Eigen::VectorXd coefficients = (X.transpose() * X).inverse() * X.transpose() * y; //see pdf
+	m_coefficients = coefficients;
+
+
 }
 
 
@@ -59,8 +83,29 @@ std::vector<double> LinearRegression::predict(const std::vector<std::vector<doub
 	*/
 	
 	// TODO
+    //checking size
+	if (m_coefficients.size() == 1 && m_coefficients.isZero()) {
+		MessageBox::Show("The model has not been fitted yet.");
+        return {};
+	}
 
+	// Convert testData to matrix representation and construct the design matrix X
+	Eigen::MatrixXd X(testData.size(), testData[0].size() + 1);
+	X.col(0) = Eigen::VectorXd::Ones(testData.size());
+	for (int i = 0; i < testData.size(); i++) {
+		for (int j = 0; j < testData[0].size(); j++) {
+			X(i, j + 1) = testData[i][j];
+		}
+	}
+
+	// Make predictions using the stored coefficients
+	Eigen::VectorXd predictions = X * m_coefficients;
+
+	//save data to result vector
 	std::vector<double> result;
+	for (int i = 0; i < predictions.size(); i++) {
+		result.push_back(predictions(i));
+	}
 	
     return result;
 }
