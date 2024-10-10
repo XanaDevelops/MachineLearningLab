@@ -43,7 +43,7 @@ void LogisticRegression::fit(const std::vector<std::vector<double>>& X_train, co
     int num_samples = X_train.size();
     double update=0.0;
     std::vector<int> binary_y(num_samples,0);
-    std::vector<double> labels = y_train, fill(num_features+1,0.5);
+    std::vector<double> labels = y_train, fill(num_features+1,0.3);
     std::vector<double> no_bias(num_features,0.0), scores(num_samples, 0.0), sigmoid(num_samples, 0.0);
     std::sort(labels.begin(), labels.end());
     auto new_end = std::unique(labels.begin(), labels.end());
@@ -161,7 +161,7 @@ std::vector<double> LogisticRegression::predict(const std::vector<std::vector<do
             }
         }
 
-        predictions.push_back(max_index);
+        predictions.push_back(max_index+1);  //TBM?
         
     }
         
