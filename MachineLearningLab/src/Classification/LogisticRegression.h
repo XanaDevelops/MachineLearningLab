@@ -3,6 +3,7 @@
 
 #include "../DataUtils/DataLoader.h"
 #include "../Evaluation/Metrics.h"
+#include "../Utils/SimilarityFunctions.h"
 #include <string>
 #include <vector>
 #include <utility>
