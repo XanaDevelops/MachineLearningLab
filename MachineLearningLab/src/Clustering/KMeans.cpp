@@ -30,19 +30,145 @@ KMeans::KMeans(int numClusters, int maxIterations)
 void KMeans::fit(const std::vector<std::vector<double>>& data) {
 	// Create a copy of the data to preserve the original dataset
 	std::vector<std::vector<double>> normalizedData = data;
+	int die, sample_size = data.size(), num_feat = data[0].size(), iterations = 0, check;
+	double mindist, dist, thresh=0.;
+	bool exit=false, finish=false;
+	std::vector<int> centroid_index, label, cluster(sample_size,0), cluster_size(numClusters_,0);
+	std::vector<std::vector<double>> newcentroids(numClusters_,std::vector<double>(num_feat,0.));
+	
 
 	/* Implement the following:
-		---	Initialize centroids randomly
-		--- Randomly select unique centroid indices
-		---	Perform K-means clustering
-		--- Assign data points to the nearest centroid
-		--- Calculate the Euclidean distance between the point and the current centroid
-		--- Update newCentroids and clusterCounts
-		--- Update centroids
-		---  Check for convergence
+		1 --- Initialize centroids randomly
+		2 --- Randomly select unique centroid indices
+		3 --- Perform K-means clustering
+		4 --- Assign data points to the nearest centroid
+		5 --- Calculate the Euclidean distance between the point and the current centroid
+		6 --- Update newCentroids and clusterCounts
+		7 --- Update centroids
+		8 --- Check for convergence
 	*/
 	
 	// TODO
+	
+	// 1
+	std::random_device rd;  // Un dispositivo hardware per generare un seme
+	std::mt19937 gen(rd()); // Mersenne Twister Engine
+	std::uniform_int_distribution<> distr(0, sample_size);
+	
+	centroid_index.push_back(distr(gen));
+
+	for (int i = 1; i < numClusters_; i++)
+	{	
+		exit = false;
+		while (!exit)
+		{
+			die = distr(gen);
+			for (int j = 0; j < i; j++)
+			{
+				if (die==centroid_index[j])
+					break;
+			}
+			exit = true;
+		}
+		centroid_index.push_back(die);
+	}
+
+	for (int i = 0; i < numClusters_; i++)
+	{
+		centroids_.push_back(data[centroid_index[i]]);
+	}
+
+	// 2
+	for (int i = 0; i < numClusters_; i++)
+	{
+		label.push_back(i);
+	}
+
+
+	while (!finish)
+	{
+		for (int k = 0; k < sample_size; k++)
+		{
+			mindist = SimilarityFunctions::euclideanDistance(data[k],centroids_[0]);
+			cluster[k] = 0;
+
+			for (int i = 1; i < numClusters_; i++)
+			{
+				dist = SimilarityFunctions::euclideanDistance(data[k], centroids_[i]);
+				if (dist < mindist)
+				{
+					mindist = dist;
+					cluster[k] = i;
+				}
+			}
+		}
+
+		if (iterations++ >= maxIterations_)
+		{
+			finish = true;
+			break;
+		}
+
+		for (int i = 0; i < numClusters_; i++)
+		{
+			cluster_size[i] = 0;
+			for (int j = 0; j < num_feat; j++)
+			{
+				newcentroids[i][j] = 0.;
+			}
+		}
+
+		for (int k = 0; k < sample_size; k++)
+		{
+			//debug = cluster[k];
+			for (int j = 0; j < num_feat; j++)
+			{
+				newcentroids[cluster[k]][j] += data[k][j];
+				
+			}
+			cluster_size[cluster[k]]++;
+		}
+
+		for (int i = 0; i < numClusters_; i++)
+		{
+			for (int j = 0; j < num_feat; j++)
+			{	
+				
+				newcentroids[i][j] = newcentroids[i][j] / cluster_size[i];
+				
+				
+			}
+		}
+		
+		check = 1;
+
+		for (int i = 0; i < numClusters_; i++)
+		{
+			if (SimilarityFunctions::euclideanDistance(newcentroids[i],centroids_[i])>thresh)
+			{
+				check = 0;
+				break;
+			}
+		}
+
+		if (check == 1)
+		{
+			finish = true;
+		}
+		else
+		{
+			for (int i = 0; i < numClusters_; i++)
+			{
+				for (int j = 0; j < num_feat; j++)
+				{
+					centroids_[i][j] = newcentroids[i][j];
+				}
+			}
+		}
+		
+
+	}
+
 }
 
 
@@ -50,6 +176,8 @@ void KMeans::fit(const std::vector<std::vector<double>>& data) {
 std::vector<int> KMeans::predict(const std::vector<std::vector<double>>& data) const {
 	std::vector<int> labels;
 	labels.reserve(data.size());
+	double mindist, dist;
+	int cluster;
 	
 	/* Implement the following:
 		--- Initialize the closest centroid and minimum distance to the maximum possible value
@@ -59,6 +187,26 @@ std::vector<int> KMeans::predict(const std::vector<std::vector<double>>& data) c
     */
 	
 	// TODO
+
+	for (int k = 0; k < data.size(); k++)
+	{
+		mindist = SimilarityFunctions::euclideanDistance(centroids_[0], data[k]);
+		cluster = 1;
+
+		for (int i = 1; i < numClusters_; i++)
+		{
+			dist = SimilarityFunctions::euclideanDistance(centroids_[i], data[k]);
+
+			if (dist < mindist)
+			{
+				mindist = dist;
+				cluster = i + 1;
+			}
+		}
+
+		labels.push_back(cluster);
+	}
+
 	return labels; // Return the labels vector
 
 }
