@@ -96,7 +96,7 @@ void LogisticRegression::fit(const std::vector<std::vector<double>>& X_train, co
 
             for (int k = 0; k < num_samples; k++)
             {
-                update += (sigmoid[k] - binary_y[k]); // is this right??
+                update += (sigmoid[k] - binary_y[k]);
             }
 
             weights[i][0] = weights[i][0] - learning_rate / num_samples * update;
@@ -108,7 +108,7 @@ void LogisticRegression::fit(const std::vector<std::vector<double>>& X_train, co
 
                 for (int k = 0; k < num_samples; k++)
                 {
-                    update += (sigmoid[k] - binary_y[k]) * X_train[k][j-1]; // is this right??
+                    update += (sigmoid[k] - binary_y[k]) * X_train[k][j-1];
                 }
 
                 weights[i][j] = weights[i][j] - learning_rate / num_samples * update;
@@ -161,7 +161,7 @@ std::vector<double> LogisticRegression::predict(const std::vector<std::vector<do
             }
         }
 
-        predictions.push_back(max_index+1);  //TBM?
+        predictions.push_back(max_index+1);  
         
     }
         
