@@ -209,7 +209,7 @@ std::vector<int> FuzzyCMeans::predict(const std::vector<std::vector<double>>& da
 				label = j;
 			}
 		}
-		labels.push_back(label);
+		labels.push_back(label+1);
 
 	}
 
