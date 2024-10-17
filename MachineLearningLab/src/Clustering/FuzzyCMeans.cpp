@@ -130,7 +130,7 @@ void FuzzyCMeans::updateMembershipMatrix(const std::vector<std::vector<double>>&
 		for (int j = 0; j < numClusters_; j++) {
 			double sum = 0.0;
 			for (int k = 0; k < numClusters_; k++) {
-				sum += std::pow(distances[j] / distances[k], 2.0 / (fuzziness_ - 1));
+				sum += std::pow(distances[j] / distances[k], 1.0 / (fuzziness_ - 1));
 			}
 			membershipMatrix_[i][j] = 1.0 / sum;
 		}
@@ -153,21 +153,25 @@ std::vector<std::vector<double>> FuzzyCMeans::updateCentroids(const std::vector<
 
 	//iterate clusters
 	std::vector<std::vector<double>> newCentroids(numClusters_, std::vector<double>(numFeatures, 0.0));
-	for (int i = 0; i < numClusters_; i++) {
-		//iterate data points
-		for (int j = 0; j < numDataPoints; j++) {
-			//calculate the membership of the data point to the cluster raised to the fuzziness
-			double membership = std::pow(membershipMatrix_[j][i], fuzziness_);
-			for (int k = 0; k < numFeatures; k++) {
-				newCentroids[i][k] += membership * data[j][k];
+	for (int cluster = 0; cluster < numClusters_; cluster++) {
+		for (int j = 0; j < numFeatures; j++) {
+			double num = 0, dem = 0;
+			for (int dp = 0; dp < numDataPoints; dp++) {
+				num += std::pow(membershipMatrix_[dp][cluster], fuzziness_) * data[dp][j];
+				dem += std::pow(membershipMatrix_[dp][cluster], fuzziness_);
+
 			}
+			newCentroids[cluster][j] = num / dem;
 		}
+		
 	}
+	return newCentroids; // Return the centroids
+}
 	
 
 
-	return centroids_; // Return the centroids
-}
+	
+
 
 
 // predict function: Predicts the cluster labels for the given data points using the Fuzzy C-Means algorithm.//
@@ -197,7 +201,7 @@ std::vector<int> FuzzyCMeans::predict(const std::vector<std::vector<double>>& da
 			//calculate the membership of the point to the centroid
 			double membership = 0.0;
 			for (int k = 0; k < numClusters_; k++) {
-				membership += std::pow(SimilarityFunctions::euclideanDistance(data[i], centroids_[j]) / SimilarityFunctions::euclideanDistance(data[i], centroids_[k]), 2.0 / (fuzziness_ - 1));
+				membership += std::pow(SimilarityFunctions::euclideanDistance(data[i], centroids_[j]) / SimilarityFunctions::euclideanDistance(data[i], centroids_[k]), 1.0 / (fuzziness_ - 1));
 			}
 			//add the label of the closest centroid to the labels vector
 			if (distance < minDistance) {
