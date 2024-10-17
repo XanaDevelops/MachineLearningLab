@@ -70,43 +70,41 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
 }
 
 void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, const std::vector<double>& trainLabels, double learning_rate, int num_iterations) {
-    //This implementation is using Gradient Descend Method
+    // This implementation is using the Gradient Descent Method
 
-	/* Implement the following: (copied from Logistic Regression)
-        1 --- Initialize weights for each class
-        2 --- Loop over each class label
-        3 --- Convert the problem into a binary classification problem
-        4 --- Loop over training epochs
-        5 --- Add bias term to the training example
-        6 --- Calculate weighted sum of features
-        7 --- Calculate the sigmoid of the weighted sum
-        8 --- Update weights using gradient descent
-    */
+    int num_samples = trainData.size();
+    int num_features = trainData[0].size();
 
-	int num_samples = trainData.size();
-    int num_feats = trainData[0].size();
-    
+    // Initialize the coefficients (weights) with zeros
+    m_coefficients = Eigen::VectorXd::Zero(num_features + 1); 
 
-    m_coefficients = Eigen::VectorXd::Zero(num_feats);
+    // Run gradient descent for num_iterations
+    for (int iter = 0; iter < num_iterations; iter++) {
+        // Initialize gradient vector
+        Eigen::VectorXd gradients = Eigen::VectorXd::Zero(num_features + 1);
 
-	//use gradient descent to update weights
-    for (int i = 0; i < num_iterations; i++) {
-        std::vector<double> gradient(num_feats, 0);
-        for (int j = 0; j < num_samples; j++) {
-            double prediction = 0;
-            for (int k = 0; k < num_feats; k++) {
-                prediction += m_coefficients[k] * trainData[j][k];
-            }
-            double error = trainLabels[j] - prediction;
-            for (int k = 0; k < num_feats; k++) {
-                gradient[k] += error * trainData[j][k];
+        // Compute the predicted values and gradients for each sample
+        for (int i = 0; i < num_samples; i++) {
+            // Add intercept term (X_0 = 1)
+            double prediction = m_coefficients(0);
+            for (int j = 0; j < num_features; j++) {
+                prediction += m_coefficients(j + 1) * trainData[i][j];
             }
 
+            // Compute the error
+            double error = prediction - trainLabels[i];
+
+            // Update gradients 
+            gradients(0) += error; 
+            for (int j = 0; j < num_features; j++) {
+                gradients(j + 1) += error * trainData[i][j]; // Gradient for each feature
+            }
         }
-        for (int j = 0; j < num_feats; j++) {
-            m_coefficients[j] -= (learning_rate * gradient[j]) / num_samples;
-        }
+
+        // Update the coefficients using the computed gradients and learning rate
+        m_coefficients -= (learning_rate / num_samples) * gradients;
     }
+
 
 }
 
@@ -154,29 +152,21 @@ std::vector<double> LinearRegression::predict(const std::vector<std::vector<doub
 
 std::vector<double> LinearRegression::predict(const std::vector<std::vector<double>>& testData, int gradient) {
 	//Using Gradient Descent
-	/* Implement the following: (copied from Logistic Regression)
-		--- Loop over each test example
-		--- Add bias term to the test example
-		--- Calculate scores for each class by computing the weighted sum of features
-		--- Predict class label with the highest score
-	*/
     std::vector<double> predictions;
 
-    int num_features = testData[0].size();
     int num_samples = testData.size();
+    int num_features = testData[0].size();
 
-	for (int i = 0; i < num_samples; i++)
-	{
-        double prediction = 0;
-		for (int j = 0; j < num_features; j++)
-		{
-			prediction += m_coefficients[j] * testData[i][j];
-		}
-        prediction += gradient;
-		predictions.push_back(prediction);
-	}
+    for (int i = 0; i < num_samples; i++) {
+        double prediction = m_coefficients(0);
+        // Add contribution from each feature
+        for (int j = 0; j < num_features; j++) {
+            prediction += m_coefficients(j + 1) * testData[i][j];
+        }
+        // Store the prediction
+        predictions.push_back(prediction);
 
-
+    }
     return predictions;
 	
 }
@@ -245,7 +235,7 @@ std::tuple<double, double, double, double, double, double,
 #if USE_MATRIX == 1
         fit(trainData, trainLabels);
 #else
-		fit(trainData, trainLabels, 0.1, 1000);
+		fit(trainData, trainLabels, 0.000001, 20000);
 #endif
         // Make predictions on the test data
 #if USE_MATRIX == 1
