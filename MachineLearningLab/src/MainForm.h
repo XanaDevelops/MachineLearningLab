@@ -1610,7 +1610,7 @@ private: System::Windows::Forms::TableLayoutPanel^ tableLayoutPanel1;
 			}
 			else if (algorithmIndex == 1) {
 				// FuzzyCMeans Clustering//
-				int numClusters = 3; // Set the number of clusters
+				int numClusters = 6; // Set the number of clusters
 				int maxIterations = 100; // Set the maximum number of iterations
 				double fuzziness = 2.0; // Set the fuzziness parameter
 				FuzzyCMeans fcm(numClusters, maxIterations, fuzziness);
@@ -1902,6 +1902,12 @@ void PlotReducedDimensionalData(System::Windows::Forms::DataVisualization::Chart
 					chart->Series[0]->Points[chart->Series[0]->Points->Count - 1]->Color = System::Drawing::Color::Green;
 				else if (i == 3)
 					chart->Series[0]->Points[chart->Series[0]->Points->Count - 1]->Color = System::Drawing::Color::Blue;
+				else if (i == 4)
+					chart->Series[0]->Points[chart->Series[0]->Points->Count - 1]->Color = System::Drawing::Color::Yellow;
+				else if (i == 5)
+					chart->Series[0]->Points[chart->Series[0]->Points->Count - 1]->Color = System::Drawing::Color::Purple;
+				else if (i == 6)
+					chart->Series[0]->Points[chart->Series[0]->Points->Count - 1]->Color = System::Drawing::Color::Orange;
 			}
 		}
 	}
