@@ -235,7 +235,7 @@ std::tuple<double, double, double, double, double, double,
 #if USE_MATRIX == 1
         fit(trainData, trainLabels);
 #else
-		fit(trainData, trainLabels, 0.000001, 20000);
+		fit(trainData, trainLabels, 0.000005, 10000);
 #endif
         // Make predictions on the test data
 #if USE_MATRIX == 1
