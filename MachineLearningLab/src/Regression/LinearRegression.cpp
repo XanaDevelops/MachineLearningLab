@@ -24,7 +24,7 @@
 #include <Eigen/Eigenvalues>
 using namespace System::Windows::Forms; // For MessageBox
 
-#define USE_MATRIX 0
+#define USE_MATRIX 0 //Change this for Matrix Form method or Gradient Descent method
 
 										///  LinearRegression class implementation  ///
 
@@ -78,6 +78,21 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
     // Initialize the coefficients (weights) with zeros
     m_coefficients = Eigen::VectorXd::Zero(num_features + 1); 
 
+	std::vector<std::vector<double>> X_normalized = trainData;
+	// Normalize the features
+	for (int i = 0; i < num_features; i++) {
+		double mean = 0.0;
+		for (int j = 0; j < num_samples; j++) {
+			mean += trainData[j][i];
+		}
+		mean /= num_samples;
+
+		for (int j = 0; j < num_samples; j++) {
+			X_normalized[j][i] = (trainData[j][i] / mean);
+		}
+	}
+   
+
     // Run gradient descent for num_iterations
     for (int iter = 0; iter < num_iterations; iter++) {
         // Initialize gradient vector
@@ -88,7 +103,7 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
             // Add intercept term (X_0 = 1)
             double prediction = m_coefficients(0);
             for (int j = 0; j < num_features; j++) {
-                prediction += m_coefficients(j + 1) * trainData[i][j];
+                prediction += m_coefficients(j + 1) * X_normalized[i][j];
             }
 
             // Compute the error
@@ -97,7 +112,7 @@ void LinearRegression::fit(const std::vector<std::vector<double>>& trainData, co
             // Update gradients 
             gradients(0) += error; 
             for (int j = 0; j < num_features; j++) {
-                gradients(j + 1) += error * trainData[i][j]; // Gradient for each feature
+                gradients(j + 1) += error * X_normalized[i][j]; // Gradient for each feature
             }
         }
 
@@ -157,11 +172,25 @@ std::vector<double> LinearRegression::predict(const std::vector<std::vector<doub
     int num_samples = testData.size();
     int num_features = testData[0].size();
 
+    std::vector<std::vector<double>> X_normalized = testData;
+    // Normalize the features
+    for (int i = 0; i < num_features; i++) {
+        double mean = 0.0;
+        for (int j = 0; j < num_samples; j++) {
+            mean += testData[j][i];
+        }
+        mean /= num_samples;
+
+        for (int j = 0; j < num_samples; j++) {
+            X_normalized[j][i] = (testData[j][i] / mean);
+        }
+    }
+
     for (int i = 0; i < num_samples; i++) {
         double prediction = m_coefficients(0);
         // Add contribution from each feature
         for (int j = 0; j < num_features; j++) {
-            prediction += m_coefficients(j + 1) * testData[i][j];
+            prediction += m_coefficients(j + 1) * X_normalized[i][j];
         }
         // Store the prediction
         predictions.push_back(prediction);
@@ -235,7 +264,7 @@ std::tuple<double, double, double, double, double, double,
 #if USE_MATRIX == 1
         fit(trainData, trainLabels);
 #else
-		fit(trainData, trainLabels, 0.000005, 10000);
+		fit(trainData, trainLabels, 0.01, 50000); 
 #endif
         // Make predictions on the test data
 #if USE_MATRIX == 1
