@@ -1,6 +1,3 @@
 # MachineLearningLab
 
-This is a test
-Isn't it
-
-Test 2
+This is the project for Machine Learning (DVA262)
